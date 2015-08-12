@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>js-colormaps: Overview</title>
+
+    <style type="text/css">
+        body {
+            font-family: Roboto Slab, sans-serif;
+            font-size: 24px;
+        }
+        table {
+            margin: auto;
+        }
+        td {
+            padding: 5px;
+            text-align: right;
+        }
+        canvas {
+            width:  500px;
+            height: 50px;
+        }
+    </style>
+    
+    <script type="text/javascript" src="js-colormaps.js"></script>
+    <script>
+        function drawColormap(CanvasID, colormap) {
+        
+            var c = document.getElementById(CanvasID);
+            var ctx = c.getContext("2d");
+
+            for (i = 0; i <= 1000; i++) {
+                var color = colormap(i/1000);
+                r = color[0];
+                g = color[1];
+                b = color[2];
+                ctx.fillStyle = 'rgb('+r+', '+g+', '+b+')';
+                ctx.fillRect(i, 0, 1, 50);
+            }
+        }
+    </script>
+</head>
+
+<body>
+
+<table>
+    <tr>
+        <td>Greens</td>
+        <td><canvas id="Greens" width="1000" height="50"></canvas></td>
+    </tr>
+    <tr>
+        <td>option_a</td>
+        <td><canvas id="OptionA" width="1000" height="50"></canvas></td>
+    </tr>
+    <tr>
+        <td>option_d</td>
+        <td><canvas id="OptionD" width="1000" height="50"></canvas></td>
+    </tr>
+</table>
+
+<script>
+    drawColormap('Greens', Greens);
+    drawColormap('OptionA', option_a);
+    drawColormap('OptionD', option_d);
+</script>
+
+</body>
+</html>
