@@ -4,38 +4,112 @@
 <head>
     <title>js-colormaps: Overview</title>
 
-    <style type="text/css">
-        body {
-            font-family: Roboto Slab, sans-serif;
-            font-size: 24px;
-        }
-        table {
-            margin: auto;
-        }
-        td {
-            padding: 5px;
-            text-align: right;
-        }
-        canvas {
-            width:  500px;
-            height: 50px;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="styles.css">
     
     <script type="text/javascript" src="js-colormaps.js"></script>
+    
     <script>
+        function appendHTMLbyID(id, text) {
+            old_html = document.getElementById(id).innerHTML;
+            document.getElementById(id).innerHTML = old_html+text;
+        }
+
+        function enforceBounds(x) {
+            if (x < 0) {
+                return 0;
+            } else if (x > 1){
+                return 1;
+            } else {
+                return x;
+            }
+        }
+
+        function interpolateLinearly(x, values) {
+
+            // Split values into four lists
+            var x_values = [];
+            var r_values = [];
+            var g_values = [];
+            var b_values = [];
+            for (i in values) {
+                x_values.push(values[i][0]);
+                r_values.push(values[i][1][0]);
+                g_values.push(values[i][1][1]);
+                b_values.push(values[i][1][2]);
+            }
+
+            var i = 1;
+            while (x_values[i] < x) {
+                i = i+1;
+            }
+            i = i-1;
+
+            var width = Math.abs(x_values[i] - x_values[i+1]);
+            var scaling_factor = (x - x_values[i]) / width;
+
+            // Get the new color values though interpolation
+            var r = r_values[i] + scaling_factor * (r_values[i+1] - r_values[i])
+            var g = g_values[i] + scaling_factor * (g_values[i+1] - g_values[i])
+            var b = b_values[i] + scaling_factor * (b_values[i+1] - b_values[i])
+
+            return [enforceBounds(r), enforceBounds(g), enforceBounds(b)];
+
+        }
+
         function drawColormap(CanvasID, colormap) {
         
             var c = document.getElementById(CanvasID);
             var ctx = c.getContext("2d");
 
-            for (i = 0; i <= 1000; i++) {
-                var color = colormap(i/1000);
-                r = color[0];
-                g = color[1];
-                b = color[2];
+            for (i = 0; i <= 1024; i++) {
+                var color = interpolateLinearly(i/1024, colormap);
+                r = Math.round(255*color[0]);
+                g = Math.round(255*color[1]);
+                b = Math.round(255*color[2]);
                 ctx.fillStyle = 'rgb('+r+', '+g+', '+b+')';
                 ctx.fillRect(i, 0, 1, 50);
+            }
+        }
+        
+        function drawColormapTable(TableID) {
+
+            var Sequential    = ['Blues', 'BuGn', 'BuPu',
+                                 'GnBu', 'Greens', 'Greys', 'Oranges', 'OrRd',
+                                 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu',
+                                 'Reds', 'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd'];
+            var Sequential2   = ['afmhot', 'autumn', 'bone', 'cool', 'copper',
+                                 'gist_heat', 'gray', 'hot', 'pink',
+                                 'spring', 'summer', 'winter'];
+            var Diverging     = ['BrBG', 'bwr', 'coolwarm', 'PiYG', 'PRGn', 'PuOr',
+                                 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral',
+                                 'seismic'];
+            var Qualitative   = ['Accent', 'Dark2', 'Paired', 'Pastel1',
+                                 'Pastel2', 'Set1', 'Set2', 'Set3'];
+            var Miscellaneous = ['gist_earth', 'terrain', 'ocean', 'gist_stern',
+                                 'brg', 'CMRmap', 'cubehelix', 'gnuplot', 
+                                 'gnuplot2', 'gist_ncar', 'nipy_spectral', 
+                                 'jet', 'rainbow', 'gist_rainbow', 'hsv', 
+                                 'flag', 'prism']
+
+            if (TableID == 'Sequential') {
+                var cm_type = Sequential;
+            } else if (TableID == 'Sequential2') {
+                var cm_type = Sequential2;
+            } else if (TableID == 'Diverging') {
+                var cm_type = Diverging;
+            } else if (TableID == 'Qualitative') {
+                var cm_type = Qualitative;
+            } else {
+                var cm_type = Miscellaneous;
+            }
+
+            for (i in cm_type) {
+                var cmap = cm_type[i];
+                appendHTMLbyID(TableID, '<tr><td>'+cmap+'</td><td><canvas id="'+cmap+'" width="1024" height="50"></canvas></td></tr>');
+            }
+            for (i in cm_type) {
+                var cmap = cm_type[i];
+                drawColormap(cmap, window[cmap]);
             }
         }
     </script>
@@ -43,25 +117,33 @@
 
 <body>
 
-<table>
-    <tr>
-        <td>Greens</td>
-        <td><canvas id="Greens" width="1000" height="50"></canvas></td>
-    </tr>
-    <tr>
-        <td>option_a</td>
-        <td><canvas id="OptionA" width="1000" height="50"></canvas></td>
-    </tr>
-    <tr>
-        <td>option_d</td>
-        <td><canvas id="OptionD" width="1000" height="50"></canvas></td>
-    </tr>
+<h2>Sequential</h2>
+<table id='Sequential'>
 </table>
 
+<h2>Sequential (2)</h2>
+<table id='Sequential2'>
+</table>
+
+<h2>Diverging</h2>
+<table id='Diverging'>
+</table>
+
+<h2>Qualitative</h2>
+<table id='Qualitative'>
+</table>
+
+<h2>Miscellaneous</h2>
+<table id='Miscellaneous'>
+</table>
+
+
 <script>
-    drawColormap('Greens', Greens);
-    drawColormap('OptionA', option_a);
-    drawColormap('OptionD', option_d);
+    drawColormapTable('Sequential');
+    drawColormapTable('Sequential2');
+    drawColormapTable('Diverging');
+    drawColormapTable('Qualitative');
+    drawColormapTable('Miscellaneous');
 </script>
 
 </body>
